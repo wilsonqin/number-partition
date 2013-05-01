@@ -1,12 +1,21 @@
 import random
 import math
 
+MAX_ITER = 25000
+ARR_LEN = 100
+RAND_MAX = ARR_LEN - 1
+
 #calculate residue
 def residue(A, S):
 	u = 0
-	for i in range(0, 5):
+	for i in range(0, ARR_LEN):
 		u += S[i]*A[i] 
-	return math.fabs(u)
+	return int(math.fabs(u))
+
+
+#"cooling schedule"
+def T(iterator):
+	return pow(10,10)*pow(0.8, (iterator/300))
 
 #######################
 
@@ -14,7 +23,7 @@ def residue(A, S):
 #finds neighbor_standard of s
 def neighbor_standard(S):
 	#pick a random place to switch the sign in S
-	index = random.randint(0, 100)
+	index = random.randint(0, RAND_MAX)
 	S[index] = (-1)*S[index]
 	
 	#with probability 1/2 switch a different index too.
@@ -26,10 +35,10 @@ def neighbor_standard(S):
 		return S
 	if(coin == 1):
 		#maybe should use dowhile loop
-		new_index = random.randint(0, 100)
+		new_index = random.randint(0, RAND_MAX)
 		if(new_index != index):
 			S[new_index] = (-1)*S[new_index]
-			return S
+		return S
 			
 #######################			
 			
@@ -37,7 +46,7 @@ def neighbor_standard(S):
 #generates a random solution
 def generate_random():
 	solution = [];
-	for i in range (0,100):
+	for i in range (0,ARR_LEN):
 		num = random.choice((-1,1))
 		solution.append(num)
 	return solution
@@ -45,24 +54,27 @@ def generate_random():
 #######################
 
 #prepartitioning to find a solution s		
-def prepartition():	
+def prepartition(A):	
+	#initialize p - partition array
+	#and initialize A' with all 0's
 	p = []
-	for i in range(0, 100):
-		num = random.randint(1, 100)
-		p.append(num)
-	#A'
 	a_prime = []
-	for j in range (0, 100):
-		#a_pj = a_pj + 
-		#not sure what to do here
-		#a_prime.append()
+	for i in range(0, ARR_LEN):
+		num = random.randint(0, RAND_MAX)
+		p.append(num)
+		a_prime.append(0)
+
+	#now update A' so that it is a sum
+	for j in range (0, ARR_LEN):
+		a_prime[p[j]] += a[j]
+	return
 
 #######################
 
 #for all of these what is max_iter to be set to?
 #Repeated Random Algorithm for Standard Representation.
 def rep_rand_standard(A, sol):
-	for iter in range (1, max_iter):
+	for iter in range (1, MAX_ITER):
 		s_prime = generate_random()
 		if (residue(A, s_prime) < residue(A, sol)):
 			sol = s_prime
@@ -73,7 +85,7 @@ def rep_rand_standard(A, sol):
 
 #Hill Climb Algorithm for Standard Representation
 def hill_climb(A, sol):
-	for i in range (1, max_iter):
+	for i in range (1, MAX_ITER):
 		s_prime = neighbor_standard(sol)
 		if(residue(A, s_prime) < residue(A, sol)):
 			sol = s_prime
@@ -85,17 +97,23 @@ def hill_climb(A, sol):
 #Simulated Annealing for Standard Representation
 def sim_anneal(A, sol):
 	s_dprime = sol
-	for i in range(1, max_iter):
+	for i in range(1, MAX_ITER):
 		s_prime = neighbor_standard(sol)
-		if(reside(A, s_prime) < residue(A, sol)):
+		if(residue(A, s_prime) < residue(A, sol)):
 			sol = s_prime
-		else:
-			# with probability exp(-res(s_prime) - res(sol)/T9iter)
+		elif math.exp(-(residue(A, s_prime) - residue(A, sol))/T(i)):
+			# with probability exp(-res(s_prime) - res(sol)/T(iter)
 			sol = s_prime
-		if(residue(A, sol) < residue(A, s_dprime):
+		if(residue(A, sol) < residue(A, s_dprime)):
 			s_dprime = sol
 	return s_dprime
 			
 
 #######################
-			
+
+f = open("test_files/test1.txt", "r")
+num_arr = [int(line.strip()) for line in f]
+
+print residue(num_arr, rep_rand_standard(num_arr, generate_random()))
+print residue(num_arr, hill_climb(num_arr, generate_random()))
+print residue(num_arr, sim_anneal(num_arr, generate_random()))
