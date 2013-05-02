@@ -10,7 +10,7 @@ def residue(A, S):
 	u = 0
 	for i in range(0, ARR_LEN):
 		u += S[i]*A[i] 
-	return int(math.fabs(u))
+	return math.fabs(u)
 
 
 #"cooling schedule"
@@ -21,23 +21,28 @@ def T(iterator):
 
 
 #finds neighbor_standard of s
-def neighbor_standard(S):
+def neighbor_standard(input):
 	#pick a random place to switch the sign in S
+	S = list(input)
 	index = random.randint(0, RAND_MAX)
 	S[index] = (-1)*S[index]
+	assert (input[index] != S[index])
 	
 	#with probability 1/2 switch a different index too.
 	coin = random.choice((0,1))
 	
 	#if coin == 0 then don't switch sign, if coin == 1 switch sign
-	#of another index, as long as new_index != index
+	#of another index, ensure new_index != index
 	if(coin == 0):
 		return S
 	if(coin == 1):
 		#maybe should use dowhile loop
 		new_index = random.randint(0, RAND_MAX)
-		if(new_index != index):
-			S[new_index] = (-1)*S[new_index]
+		while (new_index == index):
+			new_index = random.randint(0, RAND_MAX)
+		S[new_index] = (-1) * S[new_index]
+		assert (S[index] != input[index])
+		assert (S[new_index] != input[new_index])
 		return S
 			
 #######################			
@@ -66,8 +71,9 @@ def prepartition(A):
 
 	#now update A' so that it is a sum
 	for j in range (0, ARR_LEN):
-		a_prime[p[j]] += a[j]
-	return
+		a_prime[p[j]] += A[j]
+	
+	return a_prime
 
 #######################
 
@@ -77,7 +83,7 @@ def rep_rand_standard(A, sol):
 	for iter in range (1, MAX_ITER):
 		s_prime = generate_random()
 		if (residue(A, s_prime) < residue(A, sol)):
-			sol = s_prime
+			sol = list(s_prime)
 	return sol
 
 
@@ -88,7 +94,7 @@ def hill_climb(A, sol):
 	for i in range (1, MAX_ITER):
 		s_prime = neighbor_standard(sol)
 		if(residue(A, s_prime) < residue(A, sol)):
-			sol = s_prime
+			sol = list(s_prime)
 	return sol
 
 #######################
@@ -96,16 +102,19 @@ def hill_climb(A, sol):
 
 #Simulated Annealing for Standard Representation
 def sim_anneal(A, sol):
+	#annealcount = 0
 	s_dprime = sol
 	for i in range(1, MAX_ITER):
 		s_prime = neighbor_standard(sol)
 		if(residue(A, s_prime) < residue(A, sol)):
-			sol = s_prime
-		elif math.exp(-(residue(A, s_prime) - residue(A, sol))/T(i)):
+			sol = list(s_prime)
+		elif random.random() <= math.exp(-(residue(A, s_prime) - residue(A, sol))/T(i)):
 			# with probability exp(-res(s_prime) - res(sol)/T(iter)
-			sol = s_prime
+			#annealcount += 1
+			sol = list(s_prime)
 		if(residue(A, sol) < residue(A, s_dprime)):
-			s_dprime = sol
+			s_dprime = list(sol)
+	#print "annealing: ", annealcount
 	return s_dprime
 			
 
@@ -117,3 +126,8 @@ num_arr = [int(line.strip()) for line in f]
 print residue(num_arr, rep_rand_standard(num_arr, generate_random()))
 print residue(num_arr, hill_climb(num_arr, generate_random()))
 print residue(num_arr, sim_anneal(num_arr, generate_random()))
+
+p_num_arr = prepartition(num_arr)
+print residue(p_num_arr, rep_rand_standard(p_num_arr, generate_random()))
+print residue(p_num_arr, hill_climb(p_num_arr, generate_random()))
+print residue(p_num_arr, sim_anneal(p_num_arr, generate_random()))
