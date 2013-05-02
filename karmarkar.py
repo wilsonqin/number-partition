@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import maxheap
-import sys
 
 # let's initialize a heap, with the numbers from file
 def build_heap(num_arr):
@@ -27,8 +26,3 @@ def run(num_arr):
   assert(elem1 != 0)
 
   return elem1
-
-#if not sys.argv:
-#  print "error no arguments provided"
-#elif sys.argv[1]:
-#  print run(sys.argv[1])
