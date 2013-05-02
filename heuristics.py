@@ -49,6 +49,30 @@ def neighbor_standard(input):
 		return S
 			
 #######################			
+def neighbor_pre(A, input):
+	#pick a random place to switch the sign in S
+	P = list(input)
+	index = random.randint(0, RAND_MAX)
+	j = random.randint(0, RAND_MAX)
+
+	#if index != j, re-generate randomly
+	while(P[index] == j):
+		index = random.randint(0, RAND_MAX)
+		j = random.randint(0, RAND_MAX)
+
+	P[index] = j
+	a_prime = list(A)
+
+	#now update A' so that it is a sum
+	for k in range (0, ARR_LEN):
+		#print k, P[k], len(a_prime)
+		a_prime[P[k]] += A[k]
+
+	return a_prime, P
+			
+#######################
+
+
 			
 			
 #generates a random solution
@@ -67,28 +91,22 @@ def prepartition(A):
 	#and initialize A' with all 0's
 	p = []
 	a_prime = []
-	sol = []
 	for i in range(0, ARR_LEN):
 		num = random.randint(0, RAND_MAX)
 		p.append(num)
 		a_prime.append(0)
-		sol.append(0)
 
 	#now update A' so that it is a sum
 	for j in range (0, ARR_LEN):
 		a_prime[p[j]] += A[j]
-
-	sol_part = generate_random()
-	for k in range (0, ARR_LEN):
-		sol[k] = sol_part[p[k]]
 	
-	return (a_prime, sol)
+	return a_prime, p
 
 #######################
 
 #for all of these what is max_iter to be set to?
 #Repeated Random Algorithm for Standard Representation.
-def rep_rand_standard(A, starting_sol):
+def rep_rand(A, starting_sol):
 	sol = starting_sol
 	for iter in range (1, MAX_ITER):
 		s_prime = generate_random()
@@ -96,6 +114,7 @@ def rep_rand_standard(A, starting_sol):
 			sol = list(s_prime)
 	return sol
 
+#def pre_rep_rand(A, )
 
 #######################
 
@@ -107,6 +126,19 @@ def hill_climb(A, starting_sol):
 		if(residue(A, s_prime) < residue(A, sol)):
 			sol = list(s_prime)
 	return sol
+
+
+def pre_hill_climb(a_orig, p_orig):
+	#starting_sol = generate_random()
+	#sol = list(starting_sol)
+	A = list(a_orig)
+	P = list(p_orig)
+	for i in range (1, MAX_ITER):
+		a_prime, p_prime = neighbor_pre(A, P)
+		if(karmarkar.run(a_prime) < karmarkar.run(A) ):
+			#print "KKKKKKKKK", len(a_prime)
+			A = list(a_prime)
+	return karmarkar.run(A)
 
 #######################
 
@@ -128,7 +160,21 @@ def sim_anneal(A, starting_sol):
 			s_dprime = list(sol)
 	#print "annealing: ", annealcount
 	return s_dprime
-			
+
+def pre_sim_anneal(a_orig, p_orig):
+	A = list(a_orig)
+	P = list(p_orig)
+	a_dprime = list(A)
+	for i in range(1, MAX_ITER):
+		a_prime, p_prime = neighbor_pre(A,P)
+		if(karmarkar.run(a_prime) < karmarkar.run(A)):
+			A = a_prime
+		elif random.random() <= math.exp(-(karmarkar.run(a_prime) - karmarkar.run(A))/T(i)):
+			A = a_prime
+		if(karmarkar.run(A) < karmarkar.run(a_dprime)):
+			a_dprime = list(A)
+	#print "annealing: ", annealcount
+	return karmarkar.run(a_dprime)
 
 #######################
 
@@ -138,13 +184,13 @@ for count in range (1,51):
 
 	kk = str(karmarkar.run(list(num_arr)))
 
-	r1 = str(residue(num_arr, rep_rand_standard(num_arr, generate_random())))
+	r1 = str(residue(num_arr, rep_rand(num_arr, generate_random())))
 	r2 = str(residue(num_arr, hill_climb(num_arr, generate_random())))
 	r3 = str(residue(num_arr, sim_anneal(num_arr, generate_random())))
 
-	p_num_arr, p_sol = prepartition(num_arr)
-	p1 = str(residue(p_num_arr, rep_rand_standard(p_num_arr, p_sol)))
-	p2 = str(residue(p_num_arr, hill_climb(p_num_arr, p_sol)))
-	p3 = str(residue(p_num_arr, sim_anneal(p_num_arr, p_sol)))
+	p_num_arr, p = prepartition(num_arr)
+	p1 = str(residue(p_num_arr, rep_rand(p_num_arr, generate_random())))
+	p2 = str(pre_hill_climb(p_num_arr, p))
+	p3 = str(pre_sim_anneal(p_num_arr, p))
 
 	print str(count) + "," + kk + "," + r1 + "," + r2 + "," + r3 + "," + p1 + "," + p2 +"," + p3

@@ -13,7 +13,7 @@ def build_heap(num_arr):
 def run(num_arr):
   #print "Here is the heap: ", build_heap(file)
   #heap = build_heap(file)
-  heap = build_heap(num_arr)
+  heap = build_heap(list(num_arr))
   elem1 = maxheap.pop(heap)
   elem2 = maxheap.pop(heap)
   while (elem2 != 0):
