@@ -1,5 +1,8 @@
 import random
 import math
+import karmarkar
+
+# write to file
 
 MAX_ITER = 25000
 ARR_LEN = 100
@@ -9,7 +12,7 @@ RAND_MAX = ARR_LEN - 1
 def residue(A, S):
 	u = 0
 	for i in range(0, ARR_LEN):
-		u += S[i]*A[i] 
+		u += S[i]*A[i]
 	return math.fabs(u)
 
 
@@ -50,7 +53,7 @@ def neighbor_standard(input):
 			
 #generates a random solution
 def generate_random():
-	solution = [];
+	solution = []
 	for i in range (0,ARR_LEN):
 		num = random.choice((-1,1))
 		solution.append(num)
@@ -64,22 +67,29 @@ def prepartition(A):
 	#and initialize A' with all 0's
 	p = []
 	a_prime = []
+	sol = []
 	for i in range(0, ARR_LEN):
 		num = random.randint(0, RAND_MAX)
 		p.append(num)
 		a_prime.append(0)
+		sol.append(0)
 
 	#now update A' so that it is a sum
 	for j in range (0, ARR_LEN):
 		a_prime[p[j]] += A[j]
+
+	sol_part = generate_random()
+	for k in range (0, ARR_LEN):
+		sol[k] = sol_part[p[k]]
 	
-	return a_prime
+	return (a_prime, sol)
 
 #######################
 
 #for all of these what is max_iter to be set to?
 #Repeated Random Algorithm for Standard Representation.
-def rep_rand_standard(A, sol):
+def rep_rand_standard(A, starting_sol):
+	sol = starting_sol
 	for iter in range (1, MAX_ITER):
 		s_prime = generate_random()
 		if (residue(A, s_prime) < residue(A, sol)):
@@ -90,7 +100,8 @@ def rep_rand_standard(A, sol):
 #######################
 
 #Hill Climb Algorithm for Standard Representation
-def hill_climb(A, sol):
+def hill_climb(A, starting_sol):
+	sol = list(starting_sol)
 	for i in range (1, MAX_ITER):
 		s_prime = neighbor_standard(sol)
 		if(residue(A, s_prime) < residue(A, sol)):
@@ -101,9 +112,10 @@ def hill_climb(A, sol):
 
 
 #Simulated Annealing for Standard Representation
-def sim_anneal(A, sol):
+def sim_anneal(A, starting_sol):
 	#annealcount = 0
-	s_dprime = sol
+	sol = list(starting_sol)
+	s_dprime = list(sol)
 	for i in range(1, MAX_ITER):
 		s_prime = neighbor_standard(sol)
 		if(residue(A, s_prime) < residue(A, sol)):
@@ -120,14 +132,19 @@ def sim_anneal(A, sol):
 
 #######################
 
-f = open("test_files/test1.txt", "r")
-num_arr = [int(line.strip()) for line in f]
+for count in range (1,51):
+	f = open("test_files/test"+str(count)+".txt", "r")
+	num_arr = [int(line.strip()) for line in f]
 
-print residue(num_arr, rep_rand_standard(num_arr, generate_random()))
-print residue(num_arr, hill_climb(num_arr, generate_random()))
-print residue(num_arr, sim_anneal(num_arr, generate_random()))
+	kk = str(karmarkar.run(list(num_arr)))
 
-p_num_arr = prepartition(num_arr)
-print residue(p_num_arr, rep_rand_standard(p_num_arr, generate_random()))
-print residue(p_num_arr, hill_climb(p_num_arr, generate_random()))
-print residue(p_num_arr, sim_anneal(p_num_arr, generate_random()))
+	r1 = str(residue(num_arr, rep_rand_standard(num_arr, generate_random())))
+	r2 = str(residue(num_arr, hill_climb(num_arr, generate_random())))
+	r3 = str(residue(num_arr, sim_anneal(num_arr, generate_random())))
+
+	p_num_arr, p_sol = prepartition(num_arr)
+	p1 = str(residue(p_num_arr, rep_rand_standard(p_num_arr, p_sol)))
+	p2 = str(residue(p_num_arr, hill_climb(p_num_arr, p_sol)))
+	p3 = str(residue(p_num_arr, sim_anneal(p_num_arr, p_sol)))
+
+	print str(count) + "," + kk + "," + r1 + "," + r2 + "," + r3 + "," + p1 + "," + p2 +"," + p3
