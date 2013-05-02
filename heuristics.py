@@ -114,7 +114,14 @@ def rep_rand(A, starting_sol):
 			sol = list(s_prime)
 	return sol
 
-#def pre_rep_rand(A, )
+def pre_rep_rand(a_orig, p_orig):
+	A = list(a_orig)
+	P = list(p_orig)
+	for i in range (1, MAX_ITER):
+		a_prime, p_prime = prepartition(A)
+		if (karmarkar.run(a_prime) < karmarkar.run(A)):
+			A = list(a_prime)
+	return karmarkar.run(A)
 
 #######################
 
@@ -168,9 +175,9 @@ def pre_sim_anneal(a_orig, p_orig):
 	for i in range(1, MAX_ITER):
 		a_prime, p_prime = neighbor_pre(A,P)
 		if(karmarkar.run(a_prime) < karmarkar.run(A)):
-			A = a_prime
+			A = list(a_prime)
 		elif random.random() <= math.exp(-(karmarkar.run(a_prime) - karmarkar.run(A))/T(i)):
-			A = a_prime
+			A = list(a_prime)
 		if(karmarkar.run(A) < karmarkar.run(a_dprime)):
 			a_dprime = list(A)
 	#print "annealing: ", annealcount
@@ -189,7 +196,7 @@ for count in range (1,51):
 	r3 = str(residue(num_arr, sim_anneal(num_arr, generate_random())))
 
 	p_num_arr, p = prepartition(num_arr)
-	p1 = str(residue(p_num_arr, rep_rand(p_num_arr, generate_random())))
+	p1 = str(pre_rep_rand(p_num_arr, p))
 	p2 = str(pre_hill_climb(p_num_arr, p))
 	p3 = str(pre_sim_anneal(p_num_arr, p))
 
